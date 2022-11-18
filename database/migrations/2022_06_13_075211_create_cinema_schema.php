@@ -36,7 +36,70 @@ class CreateCinemaSchema extends Migration
      */
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        Schema::create('movies', function ($table) {
+            $table->id();
+            $table->string('name');
+            $table->dateTime('release_date');
+            $table->string('duration');
+            $table->string('description');
+            $table->string('genre');
+            $table->boolean('has_shows')->default(false);
+            $table->timestamps();
+        });
+
+        Schema::create('cinemas', function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->string('name');
+            $table->string('location');
+            $table->unsignedBigInteger('seats_count');
+            $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+        });
+
+        Schema::create('seats', function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('cinema_id');
+            $table->string('row');
+            $table->string('type');
+            $table->string('percentage_premium')->nullable();
+            $table->timestamps();
+            $table->foreign('cinema_id')->references('id')->on('cinemas')->cascadeOnDelete();
+        });
+
+        Schema::create('shows', function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('cinema_id');
+            $table->unsignedBigInteger('movie_id');
+            $table->dateTime('show_time');
+            $table->string('location');
+            $table->string('price_per_seat');
+            $table->boolean('booked_out')->default(false);
+            $table->timestamps();
+            $table->foreign('cinema_id')->references('id')->on('cinemas')->cascadeOnDelete();
+            $table->foreign('movie_id')->references('id')->on('movies')->cascadeOnDelete();
+        });
+
+        Schema::create('tickets', function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->string('price');
+            $table->unsignedBigInteger('seats_count');
+            $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+        });
+
+        Schema::create('seat_show', function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('seat_id');
+            $table->unsignedBigInteger('show_id');
+            $table->unsignedBigInteger('ticket_id')->nullable();
+            $table->json('payload');
+            $table->timestamps();
+            $table->foreign('seat_id')->references('id')->on('seats')->cascadeOnDelete();
+            $table->foreign('show_id')->references('id')->on('shows')->cascadeOnDelete();
+            $table->foreign('ticket_id')->references('id')->on('tickets')->nullOnDelete();
+        });
     }
 
     /**
